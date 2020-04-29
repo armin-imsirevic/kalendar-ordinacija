@@ -37,13 +37,20 @@
   }
 }
 
-.appointment-container {
+.container {
   display: flex;
+  flex-direction: column;
 }
+
+.appointments {
+  display: flex;
+  flex-direction: row;
+}
+
 .appointment {
   width: 200px;
   height: 50px;
-  background: antiquewhite;
+  background: #FAEBD7;
   margin: 5px auto 5px auto;
   box-shadow: 1px black;
   /* -webkit-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39); */
@@ -52,6 +59,18 @@
   position: relative;
 }
 
+.day {
+  margin: 0 auto auto auto;
+}
+
+.save-icon {
+  background-image: url(images.png);
+  width: 20px;
+  height: 20px;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  margin: 3px;
+}
 /* <div style="
     width: 150px;
     height: 50px;
