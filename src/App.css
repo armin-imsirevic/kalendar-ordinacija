@@ -64,16 +64,6 @@ body {
 .time {
   margin: 2px;
 }
-
-.save-icon {
-  background-image: url(images.png);
-  width: 20px;
-  height: 20px;
-  background-size: 20px;
-  background-repeat: no-repeat;
-  margin: 3px;
-}
-
 .my-icon {
   width: 20px;
   height: 20px;
