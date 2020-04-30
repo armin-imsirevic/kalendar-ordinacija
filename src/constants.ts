@@ -1,4 +1,4 @@
-interface IAppointmentTimes {
+export interface IAppointmentTimes {
     even: boolean;
     time: string;
     break: boolean;
@@ -38,7 +38,7 @@ export const APPOINTMENT_TIMES: IAppointmentTimes[] = [
     {
         even: true,
         time: '11:00',
-        break: false,
+        break: true,
     },
     {
         even: true,
@@ -88,7 +88,7 @@ export const APPOINTMENT_TIMES: IAppointmentTimes[] = [
     {
         even: false,
         time: '16:00',
-        break: false,
+        break: true,
     },
     {
         even: false,
@@ -118,10 +118,24 @@ export const APPOINTMENT_TIMES: IAppointmentTimes[] = [
 ]
 
 export const DAYS = {
-    Monday: 'Ponedeljak',
-    Tuesday: 'Utorak',
-    Wednesday: 'Srijeda',
-    Thursday: 'Četvrtak',
-    Friday: 'Petak',
-    Saturday: 'Subota',
+    0: 'Nedjelja',
+    1: 'Pondeljak',
+    2: 'Utorak',
+    3: 'Srijeda',
+    4: 'Četvrtak',
+    5: 'Petak',
+    6: 'Subota',
 }
+
+export const CLOSED_DAYS = [{
+    even: false,
+    day: DAYS[6],
+},
+{
+    even: true,
+    day: DAYS[0],
+},
+{
+    even: false,
+    day: DAYS[0],
+}];

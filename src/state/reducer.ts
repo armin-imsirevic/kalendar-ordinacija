@@ -21,6 +21,13 @@ export const reducer = (state = initialState, action: Actions) => {
                 ...state,
                 appointments: state.appointments.filter((a) => a.id !== action.data.id),
             };
+        case ActionTypes.EDIT_APPOINTMENT:
+            const updatedAppointment = action.data;
+            const filteredAppointments = state.appointments.filter((a) => a.id !== updatedAppointment.id);
+
+            return {
+                appointments: [...filteredAppointments, updatedAppointment],
+            };
         default:
             return state;
     }

@@ -2,14 +2,17 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { IState } from '../state/reducer';
-import { saveAppointmentAction, removeAppointmentAction } from '../state/actions';
-import { TimeSelect } from './TimeSelect';
+import { saveAppointmentAction, removeAppointmentAction, editAppointmentAction } from '../state/actions';
 import { IAppointment } from '../state/interface';
-import { DAYS, APPOINTMENT_TIMES } from '../constants';
+import { DAYS } from '../constants';
+import { PortalNotification } from './PortalNotification';
+import { AppointmentForm } from './AppointmentForm';
+import { WeeklySchedule } from './WeeklySchedule';
 
 export interface IComponentProps {
     appointments: IAppointment[],
     saveAppointment: (appointment: IAppointment) => void,
+    editAppointment: (appointment: IAppointment) => void,
     removeAppointment: (appointment: IAppointment) => void,
 }
 
@@ -23,77 +26,33 @@ const mapDispatchToProps = dispatch => {
     return {
         saveAppointment: (data) => dispatch(saveAppointmentAction(data)),
         removeAppointment: (data) => dispatch(removeAppointmentAction(data)),
+        editAppointment: (data) => dispatch(editAppointmentAction(data)),
     }
 };
 
-function getMonday(d) {
-    d = new Date(d);
-    var day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6:1); // adjust when day is sunday
-    return new Date(d.setDate(diff));
-}
-
-class Component extends React.Component<IComponentProps, {error: any, appointment: IAppointment}> {
-    date = new Date();
-
+class Component extends React.Component<IComponentProps, {message: any, appointment: IAppointment}> {
     render () {
-        const isEven = this.date.getDate() % 2 !== 0;
-        // const currentDate = new Date();
+        const {
+            appointment,
+            message,
+        } = this.state || {};
         const daysArray = Object.values(DAYS);
+
+        const {
+            appointments,
+            saveAppointment,
+            editAppointment,
+        } = this.props;
         return (
             <div className='container'>
-                <form onSubmit={this.handleSubmit}>
-                    <input type='number' name='id' onChange={this.handleInputChange} required/>
-                    <input type='text' name='name' onChange={this.handleInputChange} required/>
-                    <input type='date' name='date' onChange={this.handleInputChange} required/>
-                    <TimeSelect isEven={isEven} onChange={this.handleInputChange} required/>
+                <PortalNotification><h1>BLA</h1></PortalNotification>
 
-                    <input type='submit'/>
-                    <div>{this.state && this.state.error ? this.state.error : ''}</div>
-                    <div>{this.props && this.props.appointments ? JSON.stringify(this.props.appointments) : ''}</div>
-                </form>
-                <div className='appointments'>
-                    {
-                        daysArray.map((d, i) => {
-                            const monday = getMonday(new Date());
-                            const date = new Date(monday.setDate(monday.getDate() + i));
-                            const isEven = date.getDate() % 2 === 0;
-                            const ids = this.props.appointments.filter((a) => a.id !== null ).map((a) => a.id);
-                            return (
-                                <div key={i} className='day'>
-                                    <div>{d} - {date.getDate()}/{date.getMonth()}/{date.getFullYear()}</div>
-                                    {
-                                        APPOINTMENT_TIMES.filter((at) => at.even === isEven).map((at, i) => {
-                                            return (
-                                                <div key={i} className='appointment'>
-                                                    <div className='time'>{at.time}</div>
-                                                    <div
-                                                        className='save-icon'
-                                                        onClick={() =>
-                                                            this.props.saveAppointment({
-                                                                date: date.toDateString(),
-                                                                time: at.time,
-                                                                id: ids.length ? Math.max(...ids) + 1 : 1,
-                                                                name: 'Armin Imsirevic'
-                                                            })
-                                                        }
-                                                    />
-                                                    <input className='input-name' type='text' name='name'/>
-                                                </div>
-                                            )
-                                        })
-                                    }
-                                </div>
-                            )
-                        })
-                    }
-                </div>
+                <AppointmentForm handleInputChange={this.handleInputChange} handleSubmit={this.handleSubmit} appointment={appointment} />
+                <div>{this.props && this.props.appointments ? JSON.stringify(this.props.appointments) : ''}</div>
+                <div>{ message ? message : ''}</div>
+                <WeeklySchedule saveAppointment={saveAppointment} editAppointment={editAppointment} daysArray={daysArray} appointments={appointments}/>
             </div>
         );
-    }
-
-    private handleSubmit = (e) => {
-        e.preventDefault();
-        this.props.saveAppointment(this.state.appointment);
     }
 
     private handleInputChange = (e) => {
@@ -108,6 +67,29 @@ class Component extends React.Component<IComponentProps, {error: any, appointmen
             }
         });
     }
+
+    private handleSubmit = (e) => {
+        e.preventDefault();
+        const {
+            time,
+            date,
+        } = this.state.appointment;
+        const {
+            appointments,
+            saveAppointment,
+        } = this.props;
+
+        const beginningOfDate = new Date(date).setHours(0, 0, 0, 0);
+        const existingAppointment: IAppointment | any = appointments.find((a) => a.time === time && beginningOfDate === new Date(a.date).setHours(0, 0, 0, 0)) || null;
+        const ids = appointments.map((a) => a.id);
+        if (existingAppointment) {
+            this.setState({message: 'Appointment is already occupied!'});
+        } else {
+            saveAppointment({...this.state.appointment, id: ids && ids.length ? Math.max(...ids) + 1 : 1});
+            this.setState({message: 'Appointment is saved!'});
+        }
+    }
+
 };
 
 export const ConnectedComponent = connect(mapStateToProps, mapDispatchToProps)(Component);
