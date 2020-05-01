@@ -11,54 +11,43 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  margin: auto;
 }
 
 .appointment {
-  width: 200px;
-  height: 50px;
-  display: flex;
-  background: #FDF0D5;
   margin: 5px;
-  -moz-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
   box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
   position: relative;
+  width: 200px;
+  height: 50px;
+  display:flex;
+}
+
+.appointment-free {
+  background: #FDF0D5;
+  cursor: pointer;
 }
 
 .appointment-break {
-  width: 200px;
-  height: 50px;
-  display:flex;
   background: #C6D8D3;
-  margin: 5px;
-  -moz-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
-  box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
-  position: relative;
+}
+
+.appointment-reserve {
+  background: #FBBB45;
+  cursor: pointer;
 }
 
 .appointment-reserved {
-  width: 200px;
-  height: 50px;
-  display:flex;
-  background: #FBBB45;
-  margin: 5px;
-  -moz-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
-  box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
-  position: relative;
+  background: #FB6F45;
 }
 
 .appointment-closed {
-  width: 200px;
-  height: 50px;
-  display:flex;
   background: #7978C0;
-  margin: 5px;
-  -moz-box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
-  box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
-  position: relative;
 }
 
 .day-text {
   text-align: center;
+  font-weight: 700;
 }
 
 .time {
@@ -90,13 +79,41 @@ body {
   background: #FFFFFF;
 }
 
-.break-closed-text {
+.appointment-text {
   background: #DCDCDC;
   border: 0;
   position: absolute;
   bottom: 0;
   right: 0;
-  height: 25px;
-  width: 150px;
+  height: 18px;
+  width: 125px;
   font-size: 16px;
+  border-top-left-radius: 25px;
+  text-align: center;
+}
+
+.reserve-button {
+  border: 0;
+  background: 0;
+  outline: 0;
+  margin: 25px auto auto auto;
+  width: 200px;
+  height: 50px;
+  font-size: 18px;
+  box-shadow: 3px 4px 5px 0px rgba(0,0,0,0.39);
+  background-color: #82ce85;
+  cursor: pointer;
+}
+
+.reserve-button:hover {
+  background-color: #4CAF50;
+}
+
+.reserve-button:active {
+  background-color: #4CAF50;
+  box-shadow: inset 3px 4px 5px 0px rgba(0,0,0,0.39);
+}
+
+.day {
+  margin: 25px auto auto auto;
 }

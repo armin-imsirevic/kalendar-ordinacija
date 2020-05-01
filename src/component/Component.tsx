@@ -1,96 +1,66 @@
 import React from 'react';
-import { connect } from 'react-redux';
-
-import { IState } from '../state/reducer';
-import { saveAppointmentAction, removeAppointmentAction, editAppointmentAction } from '../state/actions';
-import { IAppointment } from '../state/interface';
-import { DAYS } from '../constants';
+import { IAppointment, IDay, AppointmentType, INotificationData} from './interface';
 import { PortalNotification } from './PortalNotification';
-import { AppointmentForm } from './AppointmentForm';
 import { WeeklySchedule } from './WeeklySchedule';
+import { constructWeek, getReservableAppointments, generate15ReservedAppointments, filterAppointments } from '../helpers';
 
-export interface IComponentProps {
-    appointments: IAppointment[],
-    saveAppointment: (appointment: IAppointment) => void,
-    editAppointment: (appointment: IAppointment) => void,
-    removeAppointment: (appointment: IAppointment) => void,
-}
+export class Component extends React.Component<{}, {appointments: IAppointment[], notificationData?: INotificationData, appointment?: IAppointment, days: IDay[]}> {
 
-const mapStateToProps = (state: IState) => {
-    return {
-        appointments: state.appointments
-    };
-};
-
-const mapDispatchToProps = dispatch => {
-    return {
-        saveAppointment: (data) => dispatch(saveAppointmentAction(data)),
-        removeAppointment: (data) => dispatch(removeAppointmentAction(data)),
-        editAppointment: (data) => dispatch(editAppointmentAction(data)),
+    constructor (props) {
+        super(props);
+        const days = constructWeek();
+        const reservableAppointments = getReservableAppointments(days);
+        const appointments = generate15ReservedAppointments(reservableAppointments);
+        this.state = {days, appointments}
     }
-};
 
-class Component extends React.Component<IComponentProps, {message: any, appointment: IAppointment}> {
     render () {
         const {
-            appointment,
-            message,
-        } = this.state || {};
-        const daysArray = Object.values(DAYS);
-
-        const {
+            notificationData,
+            days,
             appointments,
-            saveAppointment,
-            editAppointment,
-        } = this.props;
+        } = this.state || {};
+
         return (
             <div className='container'>
-                <PortalNotification><h1>BLA</h1></PortalNotification>
+                <PortalNotification notificationData={notificationData}/>
 
-                <AppointmentForm handleInputChange={this.handleInputChange} handleSubmit={this.handleSubmit} appointment={appointment} />
-                <div>{this.props && this.props.appointments ? JSON.stringify(this.props.appointments) : ''}</div>
-                <div>{ message ? message : ''}</div>
-                <WeeklySchedule saveAppointment={saveAppointment} editAppointment={editAppointment} daysArray={daysArray} appointments={appointments}/>
+                {/* <div>{this.state && this.state.appointments ? JSON.stringify(this.state.appointments) : ''}</div> */}
+                {/* <div>{ message ? message : ''}</div> */}
+                <WeeklySchedule
+                    selectAppointment={this.selectAppointment}
+                    deselectAppointment={this.deselectAppointment}
+                    days={days}
+                    appointments={appointments}
+                    setNotification={this.setNotification}
+                />
+
+                <button className='reserve-button' onClick={this.reserveSelectedAppointments}>Reserve Appointments</button>
             </div>
         );
     }
 
-    private handleInputChange = (e) => {
-        const stateAppointment = this.state && this.state.appointment ? this.state.appointment : {};
-        const obj = {} as IAppointment
-        const input = e.currentTarget;
-        obj[input.name] = input.value;
-        this.setState({
-            appointment: {
-                ...stateAppointment,
-                ...obj
-            }
-        });
+    setNotification = (notificationData: INotificationData) => {
+        this.setState({notificationData});
     }
 
-    private handleSubmit = (e) => {
-        e.preventDefault();
-        const {
-            time,
-            date,
-        } = this.state.appointment;
-        const {
-            appointments,
-            saveAppointment,
-        } = this.props;
+    selectAppointment = (appointment: IAppointment) => {
+        this.setState({appointments: [...this.state.appointments, appointment]})
+    }
 
-        const beginningOfDate = new Date(date).setHours(0, 0, 0, 0);
-        const existingAppointment: IAppointment | any = appointments.find((a) => a.time === time && beginningOfDate === new Date(a.date).setHours(0, 0, 0, 0)) || null;
-        const ids = appointments.map((a) => a.id);
-        if (existingAppointment) {
-            this.setState({message: 'Appointment is already occupied!'});
-        } else {
-            saveAppointment({...this.state.appointment, id: ids && ids.length ? Math.max(...ids) + 1 : 1});
-            this.setState({message: 'Appointment is saved!'});
+    deselectAppointment = (appointment: IAppointment) => {
+        const appointments = filterAppointments(this.state.appointments, appointment);
+        this.setState({appointments})
+    }
+
+    reserveSelectedAppointments = () => {
+        const selectedAppointments = this.state.appointments.filter((a) => a.type === AppointmentType.RESERVE);
+        if (selectedAppointments && selectedAppointments.length) {
+            const reserveAppointments = selectedAppointments.map((sa) => ({dateStr: sa.dateStr, time: sa.time, type: AppointmentType.RESERVED} as IAppointment));
+            const filteredAppointments = this.state.appointments.filter((a) => a.type !== AppointmentType.RESERVE);
+            this.setState({appointments: [...filteredAppointments, ...reserveAppointments]})
         }
     }
 
 };
-
-export const ConnectedComponent = connect(mapStateToProps, mapDispatchToProps)(Component);
 

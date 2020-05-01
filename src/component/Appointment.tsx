@@ -1,29 +1,33 @@
 import React from 'react';
-import { IAppointmentTimes } from '../constants';
+import { IAppointmentTimes, DAYS } from '../constants';
 import classNames from 'classnames';
-import { IAppointment } from '../state/interface';
+import { IAppointment, AppointmentType, IDay, INotificationData } from './interface';
+import { findAppointment, checkIfAppointmentTakenForDay, checkIfTwoAppointmentsTakenForWeek } from '../helpers';
 
-export class Appointment extends React.PureComponent<{ appointments: IAppointment[], appointmentTime: IAppointmentTimes, date: Date, saveAppointment: any, editAppointment: any, isEven: boolean, closed: boolean, required: boolean }> {
-    state = {
-        editable: false,
-        value: '',
-        existingAppointment: null,
-    }
+interface IAppointmentProps {
+    appointments: IAppointment[],
+    appointmentTime: IAppointmentTimes,
+    day: IDay,
+    selectAppointment: (appointment: IAppointment) => void,
+    deselectAppointment: (appointment: IAppointment) => void,
+    setNotification: (notificationData: INotificationData) => void,
+}
 
-    constructor(props) {
+export class Appointment extends React.PureComponent<IAppointmentProps, {free: boolean, markedForReserve: boolean, existingAppointment: IAppointment}> {
+
+    constructor(props: IAppointmentProps) {
         super(props);
         const {
             appointments,
-            date,
+            day,
             appointmentTime,
         } = props;
 
-        const beginningOfDate = date.setHours(0, 0, 0, 0);
-        const existingAppointment: IAppointment | any = appointments.find((a) => a.time === appointmentTime.time && beginningOfDate === new Date(a.date).setHours(0, 0, 0, 0)) || null;
+        const existingAppointment: IAppointment | any = findAppointment(appointments, {time: appointmentTime.time, dateStr: day.date.toDateString()});
 
         this.state = {
-            editable: false,
-            value: existingAppointment && existingAppointment.name ? existingAppointment.name : '',
+            free: !Boolean(existingAppointment) && !appointmentTime.isBreak && !day.isClosed,
+            markedForReserve: false,
             existingAppointment,
         }
     }
@@ -31,99 +35,98 @@ export class Appointment extends React.PureComponent<{ appointments: IAppointmen
     componentDidUpdate(prevProps) {
         const {
             appointments,
-            date,
+            day,
             appointmentTime,
         } = this.props;
 
         if (JSON.stringify(appointments) !== JSON.stringify(prevProps.appointments)) {
-            const beginningOfDate = date.setHours(0, 0, 0, 0);
-            const existingAppointment: IAppointment | any = appointments.find((a) => a.time === appointmentTime.time && beginningOfDate === new Date(a.date).setHours(0, 0, 0, 0)) || null;
+            const existingAppointment: IAppointment | any = findAppointment(appointments, {dateStr: day.date.toDateString(), time: appointmentTime.time})
             this.setState({
-                value: existingAppointment && existingAppointment.name ? existingAppointment.name : '',
                 existingAppointment
             });
         }
     }
 
-    handleChange(event) {
-        console.log(event.target.value);
-        this.setState({value: event.target.value});
-    }
-
-    handleAppointment() {
-        const {
-            existingAppointment,
-            value,
-        } = this.state;
-        const {
-            date,
-            appointmentTime,
-            appointments,
-        } = this.props;
-        if (existingAppointment) {
-            this.props.editAppointment({
-                ...existingAppointment as any,
-                name: value,
-            })
-        } else {
-            const ids = appointments.map((a) => a.id);
-
-            this.props.saveAppointment({
-                date: date.toDateString(),
-                time: appointmentTime.time,
-                id: ids.length ? Math.max(...ids) + 1 : 1,
-                name: value,
-            })
-        }
-        this.setState({editable: !this.state.editable});
-    }
-
     render() {
         const {
             appointmentTime,
-            closed,
+            day,
         } = this.props;
         const {
-            editable,
-            value,
+            markedForReserve,
+            existingAppointment,
         } = this.state;
-        const isReserved = !editable && value && value.length;
-        const classClosed = closed ?
-            'appointment-closed'
-            : appointmentTime.break ?
-                'appointment-break'
-                : isReserved ?
-                    'appointment-reserved'
-                        : 'appointment';
+
+        const {
+            text,
+            className,
+        } = this.getAppointmentTextAndClassName(existingAppointment, appointmentTime.isBreak, day.isClosed, markedForReserve);
+
         return (
-            <div className={classNames(classClosed, editable && 'appointment-editable')}>
+            <div className={classNames('appointment', className)} onClick={this.handleClick.bind(this)}>
                 <div className='time'>{appointmentTime.time}</div>
-                { appointmentTime.break || closed ? (
-                    <div className='break-closed-text'>{ closed ? 'Zatvoreno' : 'Pauza'}</div>
-                ) : (
-                    <>
-                        <div>
-                            {
-                                !editable ? (<div onClick={() => this.setState({editable: !this.state.editable})} className='fas fa-edit my-icon'/>)
-                                : (<>
-                                    <i className="fas fa-save my-icon" onClick={this.handleAppointment.bind(this)}/>
-                                    <i className="fas fa-ban my-icon" onClick={() => this.setState({editable: !this.state.editable})}/>
-                                </>)
-                            }
-                        </div>
-                        <input
-                            disabled={!this.state.editable}
-                            className={classNames('input-name', !this.state.editable ? 'input-disabled' : 'input-enabled')}
-                            type='text'
-                            name='name'
-                            value={value}
-                            onChange={this.handleChange.bind(this)}
-                        />
-                    </>
-                    )
-                }
+                <div className='appointment-text'>{text}</div>
             </div>
         )
+    }
+
+    getAppointmentTextAndClassName = (existingAppointment, isBreak, isClosed, markedForReserve) =>
+        existingAppointment && existingAppointment.type === AppointmentType.RESERVED ?
+            {text: 'Reserved', className: 'appointment-reserved'}
+            : isClosed ?
+                {text: 'Closed', className: 'appointment-closed'}
+                : isBreak ?
+                    {text: 'Break', className: 'appointment-break'}
+                    : markedForReserve ?
+                        {text: 'To be reserved', className: 'appointment-reserve'}
+                            : {text: 'Free', className: 'appointment-free'};
+
+    handleClick() {
+        const {
+            selectAppointment,
+            deselectAppointment,
+            appointmentTime,
+            appointments,
+            setNotification,
+            day,
+        } = this.props;
+
+        const {
+            free,
+            markedForReserve,
+        } = this.state;
+
+        const maxReservedForDay = checkIfAppointmentTakenForDay(appointments, day.date);
+        const maxReservedForWeek = checkIfTwoAppointmentsTakenForWeek(appointments);
+
+        if (maxReservedForWeek && free && !markedForReserve) {
+            const reservedTime = appointments.map((a) => {
+                if (a.type === AppointmentType.RESERVE) {
+                    return `${DAYS[new Date(a.dateStr).getDay()]} ${a.time}`
+                }
+                return null;
+            }).filter((a) => a != null).join(' or at ');
+            setNotification({
+                message: `You can only have two appointments per week! If you want to change appointments for this week, please deselect appointment at ${reservedTime}!`,
+                isError: true,
+                appointments: []
+            });
+        } else if (maxReservedForDay && free && !markedForReserve) {
+            const alreadySelectedAppointment = appointments.find((a) => a.dateStr === day.date.toDateString() && a.type === AppointmentType.RESERVE);
+            setNotification({
+                message: `You already have selected appointment for ${day.name}! If you want to change an appointment for this day, please deselect appointment at ${alreadySelectedAppointment.time}!`,
+                isError: true,
+                appointments: []
+            });
+        } else if (free && !markedForReserve) {
+            selectAppointment({dateStr: day.date.toDateString(), time: appointmentTime.time, type: AppointmentType.RESERVE} as IAppointment);
+            setNotification(null);
+            this.setState({markedForReserve: !markedForReserve});
+        } else if (free && markedForReserve) {
+            deselectAppointment({dateStr: day.date.toDateString(), time: appointmentTime.time, type: AppointmentType.FREE} as IAppointment);
+            setNotification(null);
+            this.setState({markedForReserve: !markedForReserve});
+        }
     }
 };
 

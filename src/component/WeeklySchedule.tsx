@@ -1,42 +1,45 @@
 import React from 'react';
-import { APPOINTMENT_TIMES, DAYS } from '../constants';
+import { APPOINTMENT_TIMES } from '../constants';
 import { Appointment } from './Appointment';
-import { IAppointment } from '../state/interface';
+import { IAppointment, IDay } from './interface';
 
-export class WeeklySchedule extends React.Component<{daysArray: any[], appointments: IAppointment[], saveAppointment: any, editAppointment: any}> {
+interface IWeeklySchedule {
+    days: IDay[],
+    appointments: IAppointment[],
+    selectAppointment: any,
+    deselectAppointment: any;
+    setNotification: any;
+}
+
+export class WeeklySchedule extends React.Component<IWeeklySchedule> {
 
     render() {
         const {
-            daysArray,
-            saveAppointment,
+            days,
+            selectAppointment,
+            deselectAppointment,
             appointments,
-            editAppointment,
+            setNotification,
         } = this.props;
 
         return (
             <div className='appointments'>
                 {
-                    daysArray.map((d, i) => {
-                        const date = new Date(new Date().setDate(new Date().getDate() + i + 1));
-                        const isEven = date.getDate() % 2 === 0;
-                        const isSunday = date.getDay() === 0;
-                        const isSaturday = date.getDay() === 6;
+                    days.map((day, i) => {
                         return (
                             <div key={i} className='day'>
-                                <div className='day-text'>{DAYS[date.getDay()]} - {date.getDate()}/{date.getMonth() + 1}/{date.getFullYear()}</div>
+                                <div className='day-text'>{day.name} - {day.date.getDate()}/{day.date.getMonth() + 1}/{day.date.getFullYear()}</div>
                                 {
-                                    APPOINTMENT_TIMES.filter((at) => at.even === isEven).map((at, i) => {
+                                    APPOINTMENT_TIMES.filter((at) => at.even === day.even).map((at, i) => {
                                         return (
                                             <Appointment
                                                 appointments={appointments}
-                                                required
-                                                date={date}
                                                 appointmentTime={at}
-                                                closed={isSunday || (!isEven && isSaturday)}
-                                                isEven={isEven}
-                                                saveAppointment={saveAppointment}
-                                                editAppointment={editAppointment}
+                                                day={day}
+                                                selectAppointment={selectAppointment}
+                                                deselectAppointment={deselectAppointment}
                                                 key={i}
+                                                setNotification={setNotification}
                                             />
                                         )
                                     })

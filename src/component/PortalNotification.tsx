@@ -1,9 +1,14 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
+import { INotificationData } from './interface';
 
 const modalRoot: HTMLElement = document.getElementById('portal-root') as any;
 
-export class PortalNotification extends React.Component {
+interface PortalNotificationProps {
+    notificationData: INotificationData;
+}
+
+export class PortalNotification extends React.Component<PortalNotificationProps> {
     el: HTMLElement;
 
     constructor(props) {
@@ -23,10 +28,17 @@ export class PortalNotification extends React.Component {
 
     render() {
         console.log(this.el);
-
         return ReactDOM.createPortal(
-            this.props.children,
+            this.constructChildren(),
             this.el,
         );
+    }
+
+    constructChildren = () => {
+        const notificationData = this.props.notificationData;
+        if (notificationData && notificationData.message){
+
+            return this.props.notificationData.message;
+        }
     }
 }
