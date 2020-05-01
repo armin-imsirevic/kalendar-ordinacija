@@ -53,21 +53,24 @@ export class Appointment extends React.PureComponent<IAppointmentComponentProps,
             existingAppointment,
         } = this.state;
 
+        const isReserved = existingAppointment && existingAppointment.type === AppointmentType.RESERVED;
+
         const {
             text,
             className,
-        } = this.getAppointmentTextAndClassName(existingAppointment, appointmentTime.isBreak, day.isClosed, markedForReserve);
+        } = this.getAppointmentTextAndClassName(isReserved, appointmentTime.isBreak, day.isClosed, markedForReserve);
+
 
         return (
-            <div className={classNames('appointment', className)} onClick={this.handleClickOnAppointment.bind(this)}>
+            <div className={classNames('appointment', className)} onClick={!isReserved ? this.handleClickOnAppointment.bind(this) : undefined}>
                 <div className='time'>{appointmentTime.time}</div>
                 <div className='appointment-text'>{text}</div>
             </div>
         )
     }
 
-    getAppointmentTextAndClassName = (existingAppointment: IAppointment, isBreak: boolean, isClosed: boolean, markedForReserve: boolean) =>
-        existingAppointment && existingAppointment.type === AppointmentType.RESERVED ?
+    getAppointmentTextAndClassName = (isReserved: boolean, isBreak: boolean, isClosed: boolean, markedForReserve: boolean) =>
+        isReserved ?
             {text: 'Reserved', className: 'appointment-reserved'}
             : isClosed ?
                 {text: 'Closed', className: 'appointment-closed'}
