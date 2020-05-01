@@ -1,20 +1,17 @@
-import { IAppointment, AppointmentType, IDay } from './components/interfaces';
+import { IAppointment, AppointmentType, IDay } from './interfaces';
 import { DAYS, APPOINTMENT_TIMES } from './constants';
 
-export const findAppointment = (appointments: IAppointment[], appointment:IAppointment) =>
+export const findAppointment = (appointments: IAppointment[], appointment: IAppointment): IAppointment =>
     appointments.find((a) => a.time === appointment.time && convertStringToBeginningOfDay(appointment.dateStr) === convertStringToBeginningOfDay(a.dateStr));
 
 
-export const filterAppointments = (appointments: IAppointment[], appointment:IAppointment) =>
+export const filterAppointments = (appointments: IAppointment[], appointment: IAppointment): IAppointment[] =>
     appointments.filter((a) => !(a.time === appointment.time && convertStringToBeginningOfDay(appointment.dateStr) === convertStringToBeginningOfDay(a.dateStr)));
 
-
-const convertStringToBeginningOfDay = (d) => new Date(d).setHours(0, 0, 0, 0);
-
-export const checkIfAppointmentTakenForDay = (appointments: IAppointment[], date: Date) =>
+export const checkIfAppointmentTakenForDay = (appointments: IAppointment[], date: Date): boolean =>
     Boolean(appointments.find((a) => a.type === AppointmentType.RESERVE && a.dateStr === date.toDateString()));
 
-export const checkIfTwoAppointmentsTakenForWeek = (appointments: IAppointment[]) =>
+export const checkIfTwoAppointmentsTakenForWeek = (appointments: IAppointment[]): boolean =>
     appointments.filter((a) => a.type === AppointmentType.RESERVE).length >= 2;
 
 
@@ -44,4 +41,8 @@ export const getReservableAppointments = (days: IDay[]): IAppointment[] => days.
     return reservableAppointments;
 })
 
-export const getDayFromString = (date: string) => DAYS[new Date(date).getDay()];
+export const getDayFromString = (date: string): string =>
+    DAYS[new Date(date).getDay()];
+
+const convertStringToBeginningOfDay = (date: string): number =>
+    new Date(date).setHours(0, 0, 0, 0);

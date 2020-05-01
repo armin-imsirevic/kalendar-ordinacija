@@ -1,7 +1,7 @@
 import React from 'react';
 
 import classNames from 'classnames';
-import { INotificationData } from './interfaces';
+import { INotificationData } from '../interfaces';
 import { getDayFromString } from '../helpers';
 
 

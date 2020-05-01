@@ -1,21 +1,17 @@
 import React from 'react';
-import { IAppointmentTimes } from '../constants';
+import {IAppointmentComponentProps, IAppointmentComponentState } from '../interfaces';
 import classNames from 'classnames';
-import { IAppointment, AppointmentType, IDay, INotificationData } from './interfaces';
-import { findAppointment, checkIfAppointmentTakenForDay, checkIfTwoAppointmentsTakenForWeek, getDayFromString } from '../helpers';
+import { IAppointment, AppointmentType } from '../interfaces';
+import {
+    findAppointment,
+    checkIfAppointmentTakenForDay,
+    checkIfTwoAppointmentsTakenForWeek,
+    getDayFromString
+} from '../helpers';
 
-interface IAppointmentProps {
-    appointments: IAppointment[],
-    appointmentTime: IAppointmentTimes,
-    day: IDay,
-    selectAppointment: (appointment: IAppointment) => void,
-    deselectAppointment: (appointment: IAppointment) => void,
-    setNotificationData: (notificationData: INotificationData) => void,
-}
+export class Appointment extends React.PureComponent<IAppointmentComponentProps, IAppointmentComponentState> {
 
-export class Appointment extends React.PureComponent<IAppointmentProps, {free: boolean, markedForReserve: boolean, existingAppointment: IAppointment}> {
-
-    constructor(props: IAppointmentProps) {
+    constructor(props: IAppointmentComponentProps) {
         super(props);
         const {
             appointments,
@@ -23,7 +19,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
             appointmentTime,
         } = props;
 
-        const existingAppointment: IAppointment = findAppointment(appointments, {time: appointmentTime.time, dateStr: day.date.toDateString()});
+        const existingAppointment = findAppointment(appointments, {time: appointmentTime.time, dateStr: day.date.toDateString()});
 
         this.state = {
             free: !Boolean(existingAppointment) && !appointmentTime.isBreak && !day.isClosed,
@@ -32,7 +28,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
         }
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: IAppointmentComponentProps) {
         const {
             appointments,
             day,
@@ -40,7 +36,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
         } = this.props;
 
         if (JSON.stringify(appointments) !== JSON.stringify(prevProps.appointments)) {
-            const existingAppointment: IAppointment = findAppointment(appointments, {dateStr: day.date.toDateString(), time: appointmentTime.time})
+            const existingAppointment = findAppointment(appointments, {dateStr: day.date.toDateString(), time: appointmentTime.time})
             this.setState({
                 existingAppointment
             });
@@ -63,14 +59,14 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
         } = this.getAppointmentTextAndClassName(existingAppointment, appointmentTime.isBreak, day.isClosed, markedForReserve);
 
         return (
-            <div className={classNames('appointment', className)} onClick={this.handleClick.bind(this)}>
+            <div className={classNames('appointment', className)} onClick={this.handleClickOnAppointment.bind(this)}>
                 <div className='time'>{appointmentTime.time}</div>
                 <div className='appointment-text'>{text}</div>
             </div>
         )
     }
 
-    getAppointmentTextAndClassName = (existingAppointment, isBreak, isClosed, markedForReserve) =>
+    getAppointmentTextAndClassName = (existingAppointment: IAppointment, isBreak: boolean, isClosed: boolean, markedForReserve: boolean) =>
         existingAppointment && existingAppointment.type === AppointmentType.RESERVED ?
             {text: 'Reserved', className: 'appointment-reserved'}
             : isClosed ?
@@ -81,7 +77,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
                         {text: 'To be reserved', className: 'appointment-reserve'}
                             : {text: 'Free', className: 'appointment-free'};
 
-    handleClick() {
+    handleClickOnAppointment() {
         const {
             selectAppointment,
             deselectAppointment,

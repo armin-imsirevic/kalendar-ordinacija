@@ -1,8 +1,4 @@
-export interface IAppointmentTimes {
-    even: boolean;
-    time: string;
-    isBreak: boolean;
-}
+import { IAppointmentTimes } from './interfaces'
 
 export const APPOINTMENT_TIMES: IAppointmentTimes[] = [
     {
@@ -67,6 +63,16 @@ export const APPOINTMENT_TIMES: IAppointmentTimes[] = [
     },
     {
         even: false,
+        time: '13:00',
+        isBreak: false,
+    },
+    {
+        even: false,
+        time: '13:30',
+        isBreak: false,
+    },
+    {
+        even: false,
         time: '14:00',
         isBreak: false,
     },
@@ -117,7 +123,7 @@ export const APPOINTMENT_TIMES: IAppointmentTimes[] = [
     },
 ]
 
-export const DAYS = {
+export const DAYS: {[x: number]: string} = {
     0: 'Sunday',
     1: 'Monday',
     2: 'Tuesday',

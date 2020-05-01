@@ -1,12 +1,12 @@
 import React from 'react';
-import { IAppointment, IDay, AppointmentType, INotificationData} from './interfaces';
-import { Notification } from './Notification';
-import { WeeklySchedule } from './WeeklySchedule';
-import { constructWeek, getReservableAppointments, generate15ReservedAppointments, filterAppointments } from '../helpers';
+import { IAppointment, AppointmentType, INotificationData, IContainerState} from './interfaces';
+import { Notification } from './components/Notification';
+import { WeeklySchedule } from './components/WeeklySchedule';
+import { constructWeek, getReservableAppointments, generate15ReservedAppointments, filterAppointments } from './helpers';
 
-export class Container extends React.Component<{}, {appointments: IAppointment[], notificationData?: INotificationData, appointment?: IAppointment, days: IDay[]}> {
+export class Container extends React.Component<{}, IContainerState> {
 
-    constructor (props) {
+    constructor (props: {}) {
         super(props);
         const days = constructWeek();
         const reservableAppointments = getReservableAppointments(days);
@@ -23,6 +23,7 @@ export class Container extends React.Component<{}, {appointments: IAppointment[]
 
         return (
             <div className='container'>
+                <h1 className='title'>Weekly calendar</h1>
                 {notificationData && <Notification setNotificationData={this.setNotificationData} notificationData={notificationData}/>}
 
                 <WeeklySchedule
@@ -59,7 +60,7 @@ export class Container extends React.Component<{}, {appointments: IAppointment[]
             this.setState({appointments: [...filteredAppointments, ...reserveAppointments]})
             this.setNotificationData({
                 isError: false,
-                message: 'You successfully reserved your appointments.',
+                message: 'Appointments reserved.',
                 appointments: reserveAppointments,
             });
         } else {

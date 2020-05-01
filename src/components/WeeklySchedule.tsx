@@ -1,7 +1,7 @@
 import React from 'react';
 import { APPOINTMENT_TIMES } from '../constants';
 import { Appointment } from './Appointment';
-import { IAppointment, IDay, INotificationData } from './interfaces';
+import { IAppointment, IDay, INotificationData } from '../interfaces';
 
 interface IWeeklySchedule {
     days: IDay[],
