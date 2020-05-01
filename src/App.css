@@ -117,3 +117,41 @@ body {
 .day {
   margin: 25px auto auto auto;
 }
+
+.overlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 1;
+  opacity: 0.2;
+}
+
+.notification {
+  width: 300px;
+  height: 150px;
+  background-color: #AF544C;
+  color: #FFFFFF;
+  z-index: 2;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 3px;
+}
+
+.notification-error {
+  background-color: #AF544C;
+}
+
+.notification-success {
+  background-color: rgb(122, 187, 102);
+}
+
+.notification-button {
+  font-size: 18px;
+  margin: auto;
+}

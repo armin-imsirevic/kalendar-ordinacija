@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { Component } from './component/Component';
+import { Container } from './components/Container';
 
 import './App.css';
 
-const App = () => (<Component />);
+const App = () => (<Container />);
 
 export default App;

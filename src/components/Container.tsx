@@ -1,10 +1,10 @@
 import React from 'react';
-import { IAppointment, IDay, AppointmentType, INotificationData} from './interface';
-import { PortalNotification } from './PortalNotification';
+import { IAppointment, IDay, AppointmentType, INotificationData} from './interfaces';
+import { Notification } from './Notification';
 import { WeeklySchedule } from './WeeklySchedule';
 import { constructWeek, getReservableAppointments, generate15ReservedAppointments, filterAppointments } from '../helpers';
 
-export class Component extends React.Component<{}, {appointments: IAppointment[], notificationData?: INotificationData, appointment?: IAppointment, days: IDay[]}> {
+export class Container extends React.Component<{}, {appointments: IAppointment[], notificationData?: INotificationData, appointment?: IAppointment, days: IDay[]}> {
 
     constructor (props) {
         super(props);
@@ -23,24 +23,22 @@ export class Component extends React.Component<{}, {appointments: IAppointment[]
 
         return (
             <div className='container'>
-                <PortalNotification notificationData={notificationData}/>
+                {notificationData && <Notification setNotificationData={this.setNotificationData} notificationData={notificationData}/>}
 
-                {/* <div>{this.state && this.state.appointments ? JSON.stringify(this.state.appointments) : ''}</div> */}
-                {/* <div>{ message ? message : ''}</div> */}
                 <WeeklySchedule
                     selectAppointment={this.selectAppointment}
                     deselectAppointment={this.deselectAppointment}
                     days={days}
                     appointments={appointments}
-                    setNotification={this.setNotification}
+                    setNotificationData={this.setNotificationData}
                 />
 
-                <button className='reserve-button' onClick={this.reserveSelectedAppointments}>Reserve Appointments</button>
+                <button className='reserve-button' onClick={this.reserveSelectedAppointments}>Reserve Selected Appointments</button>
             </div>
         );
     }
 
-    setNotification = (notificationData: INotificationData) => {
+    setNotificationData = (notificationData: INotificationData) => {
         this.setState({notificationData});
     }
 
@@ -59,6 +57,17 @@ export class Component extends React.Component<{}, {appointments: IAppointment[]
             const reserveAppointments = selectedAppointments.map((sa) => ({dateStr: sa.dateStr, time: sa.time, type: AppointmentType.RESERVED} as IAppointment));
             const filteredAppointments = this.state.appointments.filter((a) => a.type !== AppointmentType.RESERVE);
             this.setState({appointments: [...filteredAppointments, ...reserveAppointments]})
+            this.setNotificationData({
+                isError: false,
+                message: 'You successfully reserved your appointments.',
+                appointments: reserveAppointments,
+            });
+        } else {
+            this.setNotificationData({
+                message: `Unable to reserve an appointment, you need to select at least one free appointment on the weekly calendar to be able to reserve!`,
+                isError: true,
+                appointments: null,
+            });
         }
     }
 

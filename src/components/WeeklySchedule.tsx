@@ -1,14 +1,14 @@
 import React from 'react';
 import { APPOINTMENT_TIMES } from '../constants';
 import { Appointment } from './Appointment';
-import { IAppointment, IDay } from './interface';
+import { IAppointment, IDay, INotificationData } from './interfaces';
 
 interface IWeeklySchedule {
     days: IDay[],
     appointments: IAppointment[],
-    selectAppointment: any,
-    deselectAppointment: any;
-    setNotification: any;
+    selectAppointment: (appointment: IAppointment) => void,
+    deselectAppointment: (appointment: IAppointment) => void,
+    setNotificationData: (notificationData: INotificationData) => void,
 }
 
 export class WeeklySchedule extends React.Component<IWeeklySchedule> {
@@ -19,7 +19,7 @@ export class WeeklySchedule extends React.Component<IWeeklySchedule> {
             selectAppointment,
             deselectAppointment,
             appointments,
-            setNotification,
+            setNotificationData,
         } = this.props;
 
         return (
@@ -39,7 +39,7 @@ export class WeeklySchedule extends React.Component<IWeeklySchedule> {
                                                 selectAppointment={selectAppointment}
                                                 deselectAppointment={deselectAppointment}
                                                 key={i}
-                                                setNotification={setNotification}
+                                                setNotificationData={setNotificationData}
                                             />
                                         )
                                     })

@@ -1,4 +1,4 @@
-import { IAppointment, AppointmentType, IDay } from './component/interface';
+import { IAppointment, AppointmentType, IDay } from './components/interfaces';
 import { DAYS, APPOINTMENT_TIMES } from './constants';
 
 export const findAppointment = (appointments: IAppointment[], appointment:IAppointment) =>
@@ -43,3 +43,5 @@ export const getReservableAppointments = (days: IDay[]): IAppointment[] => days.
     );
     return reservableAppointments;
 })
+
+export const getDayFromString = (date: string) => DAYS[new Date(date).getDay()];

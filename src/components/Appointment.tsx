@@ -1,8 +1,8 @@
 import React from 'react';
-import { IAppointmentTimes, DAYS } from '../constants';
+import { IAppointmentTimes } from '../constants';
 import classNames from 'classnames';
-import { IAppointment, AppointmentType, IDay, INotificationData } from './interface';
-import { findAppointment, checkIfAppointmentTakenForDay, checkIfTwoAppointmentsTakenForWeek } from '../helpers';
+import { IAppointment, AppointmentType, IDay, INotificationData } from './interfaces';
+import { findAppointment, checkIfAppointmentTakenForDay, checkIfTwoAppointmentsTakenForWeek, getDayFromString } from '../helpers';
 
 interface IAppointmentProps {
     appointments: IAppointment[],
@@ -10,7 +10,7 @@ interface IAppointmentProps {
     day: IDay,
     selectAppointment: (appointment: IAppointment) => void,
     deselectAppointment: (appointment: IAppointment) => void,
-    setNotification: (notificationData: INotificationData) => void,
+    setNotificationData: (notificationData: INotificationData) => void,
 }
 
 export class Appointment extends React.PureComponent<IAppointmentProps, {free: boolean, markedForReserve: boolean, existingAppointment: IAppointment}> {
@@ -23,7 +23,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
             appointmentTime,
         } = props;
 
-        const existingAppointment: IAppointment | any = findAppointment(appointments, {time: appointmentTime.time, dateStr: day.date.toDateString()});
+        const existingAppointment: IAppointment = findAppointment(appointments, {time: appointmentTime.time, dateStr: day.date.toDateString()});
 
         this.state = {
             free: !Boolean(existingAppointment) && !appointmentTime.isBreak && !day.isClosed,
@@ -40,7 +40,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
         } = this.props;
 
         if (JSON.stringify(appointments) !== JSON.stringify(prevProps.appointments)) {
-            const existingAppointment: IAppointment | any = findAppointment(appointments, {dateStr: day.date.toDateString(), time: appointmentTime.time})
+            const existingAppointment: IAppointment = findAppointment(appointments, {dateStr: day.date.toDateString(), time: appointmentTime.time})
             this.setState({
                 existingAppointment
             });
@@ -87,7 +87,7 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
             deselectAppointment,
             appointmentTime,
             appointments,
-            setNotification,
+            setNotificationData,
             day,
         } = this.props;
 
@@ -102,29 +102,29 @@ export class Appointment extends React.PureComponent<IAppointmentProps, {free: b
         if (maxReservedForWeek && free && !markedForReserve) {
             const reservedTime = appointments.map((a) => {
                 if (a.type === AppointmentType.RESERVE) {
-                    return `${DAYS[new Date(a.dateStr).getDay()]} ${a.time}`
+                    return `${getDayFromString(a.dateStr)} at ${a.time}`
                 }
                 return null;
-            }).filter((a) => a != null).join(' or at ');
-            setNotification({
-                message: `You can only have two appointments per week! If you want to change appointments for this week, please deselect appointment at ${reservedTime}!`,
+            }).filter((a) => a != null).join(' or on ');
+            setNotificationData({
+                message: `You can only select two appointments per week! If you want to change selected appointments for this week, please deselect an appointment on ${reservedTime}!`,
                 isError: true,
                 appointments: []
             });
         } else if (maxReservedForDay && free && !markedForReserve) {
             const alreadySelectedAppointment = appointments.find((a) => a.dateStr === day.date.toDateString() && a.type === AppointmentType.RESERVE);
-            setNotification({
-                message: `You already have selected appointment for ${day.name}! If you want to change an appointment for this day, please deselect appointment at ${alreadySelectedAppointment.time}!`,
+            setNotificationData({
+                message: `You already selected an appointment for ${day.name}! If you want to change an appointment for this day, please deselect appointment at ${alreadySelectedAppointment.time}!`,
                 isError: true,
                 appointments: []
             });
         } else if (free && !markedForReserve) {
             selectAppointment({dateStr: day.date.toDateString(), time: appointmentTime.time, type: AppointmentType.RESERVE} as IAppointment);
-            setNotification(null);
+            setNotificationData(null);
             this.setState({markedForReserve: !markedForReserve});
         } else if (free && markedForReserve) {
             deselectAppointment({dateStr: day.date.toDateString(), time: appointmentTime.time, type: AppointmentType.FREE} as IAppointment);
-            setNotification(null);
+            setNotificationData(null);
             this.setState({markedForReserve: !markedForReserve});
         }
     }
